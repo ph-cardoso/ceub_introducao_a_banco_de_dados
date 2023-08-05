@@ -45,34 +45,34 @@ FOREIGN KEY (codDepartamento) REFERENCES tb_departamento(codDepartamento);
 -- Insert data in 'tb_cargo'
 INSERT INTO tb_cargo (codCargo, descricao)
 VALUES
-(1, 'Enfermeiro(a)'),
-(2, 'Administrador(a)'),
-(3, 'Analista'),
-(4, 'Engenheiro(a)'),
-(5, 'Advogado(a)'),
-(6, 'Gerente'),
-(7, 'Executivo(a)');
+    (1, 'Enfermeiro(a)'),
+    (2, 'Administrador(a)'),
+    (3, 'Analista'),
+    (4, 'Engenheiro(a)'),
+    (5, 'Advogado(a)'),
+    (6, 'Gerente'),
+    (7, 'Executivo(a)');
 
 -- Insert data in 'tb_departamento'
 INSERT INTO tb_departamento (codDepartamento, descricao)
 VALUES
-(1, 'Enfermaria'),
-(2, 'Administracao'),
-(3, 'Informatica'),
-(4, 'Engenharia'),
-(5, 'Juridico'),
-(6, 'Logistica'),
-(7, 'Presidencia');
+    (1, 'Enfermaria'),
+    (2, 'Administracao'),
+    (3, 'Informatica'),
+    (4, 'Engenharia'),
+    (5, 'Juridico'),
+    (6, 'Logistica'),
+    (7, 'Presidencia');
 
 -- Insert data in 'tb_funcionario'
 INSERT INTO tb_funcionario (matricula, nome, dtNascimento, salario, codCargo, codDepartamento)
 VALUES
-(1,'Ana Clara', '1977-07-05', 3000, 5, 1),
-(2,'Patricia Azevedo', '1944-07-04', 4000, 1, 1),
-(3,'Jose Maria', '1971-05-10', 6000, 3, 1),
-(4,'Sonia Abrantes', '1979-05-29', 7000, 4, 1),
-(5,'Valdir Reinaldo', '1960-09-22', 16000, 2, 2),
-(6,'Jose Alberto', '1955-01-13', 15000, 2, 2);
+    (1,'Ana Clara', '1977-07-05', 3000, 5, 1),
+    (2,'Patricia Azevedo', '1944-07-04', 4000, 1, 1),
+    (3,'Jose Maria', '1971-05-10', 6000, 3, 1),
+    (4,'Sonia Abrantes', '1979-05-29', 7000, 4, 1),
+    (5,'Valdir Reinaldo', '1960-09-22', 16000, 2, 2),
+    (6,'Jose Alberto', '1955-01-13', 15000, 2, 2);
 
 -- Exercícios
 -- 01) Listar registro(s) com 'codDepartamento = 2' na tabela 'tb_funcionario'
@@ -379,3 +379,74 @@ SELECT
 FROM tb_funcionario f
 INNER JOIN tb_cargo c ON f.codCargo = c.codCargo
 GROUP BY c.descricao;
+
+-- Outer joins
+
+-- Insert cargo 'Jornalista' e 'Cientista de Dados'
+INSERT INTO tb_cargo (codCargo, descricao)
+VALUES
+    (7, 'Jornalista'),
+    (8, 'Cientista de Dados');
+
+-- Insert departamentos 'Marketing' e 'Financeiro'
+INSERT INTO tb_departamento (codDepartamento, descricao)
+VALUES
+    (7, 'Marketing'),
+    (8, 'Financeiro');
+
+-- Exercícios
+
+-- 01)  Listar todos os departamentos com os respectivos funcionários utilizando o left outer join
+-- Os departamentos que não possuem funcionários devem ser exibidos
+SELECT
+    d.descricao AS departamento,
+    f.nome AS funcionario
+FROM tb_departamento d
+LEFT JOIN tb_funcionario f ON d.codDepartamento = f.codDepartamento;
+
+-- 02) Listar todos os funcionários com os respectivos cargos utilizando o right outer join
+-- Os cargos que não possuem funcionários devem ser exibidos
+SELECT
+    c.descricao AS cargo,
+    f.nome AS funcionario
+FROM tb_funcionario f
+RIGHT JOIN tb_cargo c ON c.codCargo = f.codCargo;
+
+-- Transactions
+
+-- Exercícios
+-- 01) Diminuir em 10% os salários dos funcionários e depois desfazer a transação
+START TRANSACTION;
+UPDATE tb_funcionario SET salario = salario * 0.9;
+ROLLBACK;
+
+-- 02) Aumentar em 10% os salários dos funcionários e depois confirmar a transação
+START TRANSACTION;
+UPDATE tb_funcionario SET salario = salario * 1.1;
+COMMIT;
+
+-- Subquery
+
+-- Exercícios
+-- 01) Listar os funcionários que recebem abaixo da média salarial
+SELECT
+    nome,
+    salario,
+    (SELECT AVG(salario) FROM tb_funcionario) AS mediaSalarios
+FROM tb_funcionario
+WHERE salario < (
+    SELECT AVG(salario) FROM tb_funcionario
+);
+
+-- 02) Listar os funcionários, com a descrição dos respectivos cargos, que
+-- recebem acima da média salarial
+SELECT
+    f.nome AS funcionario,
+    c.descricao AS cargo,
+    f.salario,
+    (SELECT AVG(salario) FROM tb_funcionario) AS mediaSalarios
+FROM tb_funcionario f
+INNER JOIN tb_cargo c ON f.codCargo = c.codCargo
+WHERE f.salario > (
+    SELECT AVG(salario) FROM tb_funcionario
+);

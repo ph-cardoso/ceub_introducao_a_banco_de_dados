@@ -64,42 +64,42 @@ DROP COLUMN dtPublicacao;
 -- Insert data in 'tb_genero'
 INSERT INTO tb_genero (codGenero, descricao)
 VALUES
-(1, 'Computação'),
-(2, 'Medicina'),
-(3, 'Engenharia'),
-(4, 'Jurídico'),
-(5, 'Arquitetura'),
-(6, 'Biologia'),
-(7, 'Mecatrônica');
+    (1, 'Computação'),
+    (2, 'Medicina'),
+    (3, 'Engenharia'),
+    (4, 'Jurídico'),
+    (5, 'Arquitetura'),
+    (6, 'Biologia'),
+    (7, 'Mecatrônica');
 
 -- Insert data in 'tb_editora'
 INSERT INTO tb_editora (codEditora, descricao)
 VALUES
-(1, 'Novatec'),
-(2, 'Amazon'),
-(3, 'Coopmed'),
-(4, 'Livraria Florence'),
-(5, 'Blucher'),
-(6, 'Mundial'),
-(7, 'Saraiva'),
-(8, 'Editora Forum'),
-(9, 'Dickens');
+    (1, 'Novatec'),
+    (2, 'Amazon'),
+    (3, 'Coopmed'),
+    (4, 'Livraria Florence'),
+    (5, 'Blucher'),
+    (6, 'Mundial'),
+    (7, 'Saraiva'),
+    (8, 'Editora Forum'),
+    (9, 'Dickens');
 
 -- Insert data in 'tb_livro'
 INSERT INTO tb_livro (isbn, titulo, preco, codEditora, codGenero)
 VALUES
-(1, 'Banco de dados', 300.00, 1, 1),
-(2, 'Engenharia de software', 350.00, 1, 1),
-(3, 'Ortopedia', 310.00, 3, 2),
-(4, 'Cardiologia', 320.00, 4, 2),
-(5, 'Estrutura Predial', 200.00, 5, 3),
-(6, 'Estrutura Hidraulica', 300.00, 6, 3),
-(7, 'Direito Penal', 150.00, 7, 4),
-(8, 'Direito Civil', 200.00, 8, 4),
-(9, 'Cores', 200.00, 7, 5),
-(10, 'Paisagismo', 250.00, 8, 5),
-(11, 'Virus', 300.00, 9, 6),
-(12, 'Bacteria', 300.00, 9, 6);
+    (1, 'Banco de dados', 300.00, 1, 1),
+    (2, 'Engenharia de software', 350.00, 1, 1),
+    (3, 'Ortopedia', 310.00, 3, 2),
+    (4, 'Cardiologia', 320.00, 4, 2),
+    (5, 'Estrutura Predial', 200.00, 5, 3),
+    (6, 'Estrutura Hidraulica', 300.00, 6, 3),
+    (7, 'Direito Penal', 150.00, 7, 4),
+    (8, 'Direito Civil', 200.00, 8, 4),
+    (9, 'Cores', 200.00, 7, 5),
+    (10, 'Paisagismo', 250.00, 8, 5),
+    (11, 'Virus', 300.00, 9, 6),
+    (12, 'Bacteria', 300.00, 9, 6);
 
 -- Select every column in table 'tb_genero'
 SELECT * FROM tb_genero;
@@ -338,3 +338,74 @@ FROM tb_livro l
 INNER JOIN tb_genero g ON l.codGenero = g.codGenero
 GROUP BY g.descricao
 ORDER BY qtd_livros DESC;
+
+
+-- Outer join
+-- Insert genero 'Química', 'Física', 'Música'
+INSERT INTO tb_genero (codGenero, descricao)
+VALUES
+(8, 'Química'),
+(9, 'Física'),
+(10, 'Música');
+
+-- Select todos os generos com os respectivos livros
+SELECT
+    g.descricao AS genero,
+    l.titulo
+FROM tb_genero g
+LEFT JOIN tb_livro l ON l.codGenero = g.codGenero
+ORDER BY g.descricao;
+
+-- Select quantidade de livros por gênero
+SELECT
+    g.descricao AS genero,
+    COUNT(l.isbn) AS qtd_livros
+FROM tb_genero g
+LEFT JOIN tb_livro l ON l.codGenero = g.codGenero
+GROUP BY g.descricao
+ORDER BY qtd_livros DESC;
+
+-- Transactions
+-- Aumentar preço do livro em 10% usando transactions e fazer rollback
+START TRANSACTION;
+UPDATE tb_livro SET preco = preco * 1.1;
+ROLLBACK;
+
+-- Abaixar o preço em 10% usando transactions e fazer commit
+START TRANSACTION;
+UPDATE tb_livro SET preco = preco * 0.9;
+COMMIT;
+
+
+-- Subquery
+
+-- Recuperar todos os livros onde o código da editora é menor que 3
+SELECT * FROM tb_livro WHERE codEditora < 3;
+
+-- Recuperar todos os livros onde o código da editora é menor que 3 com subquery
+SELECT * FROM tb_livro
+WHERE codEditora IN (
+    SELECT codEditora FROM tb_editora
+    WHERE codEditora < 3
+);
+
+-- Listar o isbn, o título, o preço e o gênero do livro que possui o menor preço
+SELECT
+    l.isbn,
+    l.titulo,
+    l.preco,
+    g.descricao AS genero
+FROM tb_livro l
+INNER JOIN tb_genero g ON l.codGenero = g.codGenero
+WHERE l.preco = (
+    SELECT MIN(preco) FROM tb_livro
+);
+
+-- Listar o isbn e o título dos livros que custam abaixo da média de preços
+SELECT
+    l.isbn,
+    l.titulo
+FROM tb_livro l
+WHERE l.preco < (
+    SELECT AVG(preco) FROM tb_livro
+);
